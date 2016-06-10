@@ -1,6 +1,9 @@
 from flask import Flask, abort, request
+from flask_cors import CORS, cross_origin
 import cv2
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/')
 def serve_form():
@@ -16,10 +19,12 @@ def serve_form():
                     </html>'''
     return to_serve
 
+@cross_origin()
 @app.route('/upload', methods = ['GET', 'POST'])
 def upload_file():
    if request.method == 'POST':
       f = request.files['file']
+      print f.filename
       if f.content_type == 'image/jpeg' or f.content_type == 'image/jpg' or f.content_type == 'image/png':
           f.save('/tmp/' + f.filename)
           image = cv2.imread('/tmp/' + f.filename)
