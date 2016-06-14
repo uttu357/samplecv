@@ -38,3 +38,5 @@ def upload_file():
               return ff
       else:
           abort(400)
+          
+if __name__=="__main__": app.run('0.0.0.0', 5001)
