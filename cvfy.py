@@ -30,7 +30,14 @@ def validateTOKEN(function_name):
             raise AssertionError 
     except Exception as e:
         if (e.__class__.__name__ == 'AssertionError'):
-            raise ValueError("cvfy [Error Code: 003] => Malformed Token")  
+            raise ValueError("cvfy [Error Code: 003] => Malformed Token")
+            
+def validate_socket_id(request):
+    try:
+        if not request.form['socket-id']:
+            raise Exception("cvfy [Error Code: 011] => field socket-id not found in the incoming request")
+    except:
+        raise Exception("cvfy [Error Code: 011] => field socket-id not found in the incoming request")                      
 
 ##########
 ## CORS ##
@@ -89,14 +96,22 @@ def getTextArray():
 
 def sendTextArray(data):
     validateTOKEN(sys._getframe().f_code.co_name)
+    validate_socket_id(request)
     tempval = data
-    if (isinstance(data, basestring if (sys.version_info[0] == 2) else str) or isinstance(data, list) or isinstance(data, tuple)):
-        data = json.dumps(data)
+    if (isinstance(data, basestring if (sys.version_info[0] == 2) else str)):    
+        data = [data]
+    elif (isinstance(data, list) or isinstance(data, tuple)):
+        pass
     else:
         raise ValueError("cvfy [Error Code: 005] => sendTextArray can only accept a string or an array or a tuple")
     for element in tempval:
         if (not isinstance(element, basestring if (sys.version_info[0] == 2) else str)):
             raise ValueError("cvfy [Error Code: 006] => iterable is not composed of strings")
+    data = {
+        'socketId': request.form['socket-id'],
+        'data': data
+    }
+    data = json.dumps(data)  
     try:
         headers = {'Content-Type': 'application/json'}
         if (CVFY_TARGET == 'local'):
