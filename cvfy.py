@@ -86,7 +86,19 @@ def getTextArray():
             i += 1
     except Exception as e:
         pass
-    return textdata        
+    return textdata
+    
+def getImageArray():
+    validateTOKEN(sys._getframe().f_code.co_name)    
+    imagedata = []
+    i = 0
+    try:
+        while True:
+            imagedata.append(request.files['input-image-{}'.format(i)])
+            i += 1
+    except Exception as e:
+        pass
+    return imagedata
             
         
         

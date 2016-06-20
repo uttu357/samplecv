@@ -16,8 +16,6 @@ def concat():
     
     ## sending back the data
     cvfy.sendTextArray([joined_and_uppercase, and_then_reversed])
-    
-    ## telling the APP server everything is okay - important at the end
     return 'OK'
         
 app.run()
