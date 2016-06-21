@@ -136,10 +136,7 @@ def sendTextArray(data):
     data = json.dumps(data)  
     try:
         headers = {'Content-Type': 'application/json'}
-        if (CVFY_TARGET == 'local'):
-            url = 'http://0.0.0.0:' + TOKEN.split(':')[3] + CVFY_INJECTION_SUBPATH
-        elif (CVFY_TARGET == 'remote'):
-            url = 'http://' + TOKEN.split(':')[1] + ':' + TOKEN.split(':')[3] + CVFY_INJECTION_SUBPATH
+        url = 'http://' + TOKEN.split(':')[1] + ':' + TOKEN.split(':')[3] + CVFY_INJECTION_SUBPATH
         r = requests.post(url, headers=headers, data=data)
         if (r.status_code == 400):
             raise Exception("cvfy [Error Code: 007] => 400: Bad Request - app server says malformed request")
