@@ -22,7 +22,6 @@ def validateTOKEN(function_name):
             raise AssertionError("cvfy [Error Code: 002] => TOKEN not a string: {0} called with an invalid TOKEN value".format(function_name))          
     try:
         if (TOKEN.split(':')[0] == 'gh'):
-            assert TOKEN.split(':')[1] == 'local'
             assert int(TOKEN.split(':')[3])
             assert int(TOKEN.split(':')[4])
         elif (TOKEN.split(':')[0] == 'nongh'):
