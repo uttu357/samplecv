@@ -3,7 +3,6 @@ from flask_cors import CORS, cross_origin
 import requests
 import sys
 
-CVFY_TARGET = 'local'
 CVFY_INJECTION_SUBPATH = '/inject'
 
 app = Flask(__name__)
@@ -24,6 +23,9 @@ def validateTOKEN(function_name):
     try:
         if (TOKEN.split(':')[0] == 'gh'):
             assert TOKEN.split(':')[1] == 'local'
+            assert int(TOKEN.split(':')[3])
+            assert int(TOKEN.split(':')[4])
+        elif (TOKEN.split(':')[0] == 'nongh'):
             assert int(TOKEN.split(':')[3])
             assert int(TOKEN.split(':')[4])
         else:
@@ -68,6 +70,14 @@ def register(APP_TOKEN):
     global TOKEN
     TOKEN = APP_TOKEN
     validateTOKEN(sys._getframe().f_code.co_name)
+    global CVFY_TARGET
+    if (TOKEN.split(':')[0] == 'gh'):
+        CVFY_TARGET = 'local'
+    elif (TOKEN.split(':')[0] == 'nongh'):
+        CVFY_TARGET = 'remote'
+    else:
+        raise Exception("cvfy [Error Code: 012] => Malformed Token - Cannot set Target")
+        
     app.listen = override_route(app.route)
     app.run = override_run(app.run, TOKEN)
     return app
@@ -128,15 +138,18 @@ def sendTextArray(data):
         headers = {'Content-Type': 'application/json'}
         if (CVFY_TARGET == 'local'):
             url = 'http://0.0.0.0:' + TOKEN.split(':')[3] + CVFY_INJECTION_SUBPATH
-            r = requests.post(url, headers=headers, data=data)
-            if (r.status_code == 400):
-                raise Exception("cvfy [Error Code: 007] => 400: Bad Request - app server says malformed request")
-            elif (r.status_code == 500):
-                raise Exception("cvfy [Error Code: 008] => 500: Internal Server Error - app server cannot handle your request")
-            elif (r.status_code == 404):
-                raise Exception("cvfy [Error Code: 009] => 404: Not Found - app server cannot be found; {0} is unreachable".format(url))
-            elif (r.status_code == 200):
-                return r.text
+        elif (CVFY_TARGET == 'remote'):
+            url = 'http://' + TOKEN.split(':')[1] + ':' + TOKEN.split(':')[3] + CVFY_INJECTION_SUBPATH
+        r = requests.post(url, headers=headers, data=data)
+        if (r.status_code == 400):
+            raise Exception("cvfy [Error Code: 007] => 400: Bad Request - app server says malformed request")
+        elif (r.status_code == 500):
+            raise Exception("cvfy [Error Code: 008] => 500: Internal Server Error - app server cannot handle your request")
+        elif (r.status_code == 404):
+            raise Exception("cvfy [Error Code: 009] => 404: Not Found - app server cannot be found; {0} is unreachable".format(url))
+        elif (r.status_code == 200):
+            return r.text
+            
     except Exception as e:
         if (e.__class__.__name__ == 'ConnectionError'):
             raise Exception("cvfy [Error Code: 010] => Connection Error")
