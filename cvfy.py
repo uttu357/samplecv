@@ -2,6 +2,9 @@ from flask import *
 from flask_cors import CORS, cross_origin
 import requests
 import sys
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 CVFY_INJECTION_SUBPATH = '/inject'
 
@@ -56,10 +59,13 @@ def override_route(route):
         return (route('/event', methods=['POST', ]))
     return wrapper
     
-def override_run(runner, TOKEN):
+def override_run(TOKEN):
     def wrapper(*args, **kwargs):
-        return (runner('0.0.0.0', int(TOKEN.split(':')[4])))
-    return wrapper
+        http_server = HTTPServer(WSGIContainer(app))
+        http_server.listen(int(TOKEN.split(':')[4]))
+        print ("running on port: {}".format(TOKEN.split(':')[4]))
+        IOLoop.instance().start()
+    return (wrapper)
     
 ##################
 ## app register ##
@@ -78,8 +84,8 @@ def register(APP_TOKEN):
         raise Exception("cvfy [Error Code: 012] => Malformed Token - Cannot set Target")
         
     app.listen = override_route(app.route)
-    app.run = override_run(app.run, TOKEN)
-    return app
+    app.run = override_run(TOKEN)
+    return (app)
     
 #####################
 ## input functions ##
@@ -95,7 +101,7 @@ def getTextArray():
             i += 1
     except Exception as e:
         pass
-    return textdata
+    return (textdata)
     
 def getImageArray():
     validateTOKEN(sys._getframe().f_code.co_name)    
@@ -107,7 +113,7 @@ def getImageArray():
             i += 1
     except Exception as e:
         pass
-    return imagedata
+    return (imagedata)
             
         
         
@@ -147,7 +153,7 @@ def sendTextArray(data):
         elif (r.status_code == 404):
             raise Exception("cvfy [Error Code: 009] => 404: Not Found - app server cannot be found; {0} is unreachable".format(url))
         elif (r.status_code == 200):
-            return r.text
+            return (r.text)
             
     except Exception as e:
         if (e.__class__.__name__ == 'ConnectionError'):

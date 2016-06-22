@@ -1,12 +1,12 @@
 
 import cvfy
 
-app = cvfy.register('gh:0.0.0.0:60819434:3000:8000')
+app = cvfy.register('gh:107.170.77.168:60819434:3000:8000')
 
 @cvfy.crossdomain
 @app.listen()
 def concat():
-    
+        
     ## receiving the data
     alltext = cvfy.getTextArray()
     
